@@ -94,8 +94,8 @@ module ClosureTree
         _ct.connection.execute <<-SQL.strip_heredoc
           DELETE FROM #{_ct.quoted_hierarchy_table_name}
           WHERE descendant_id IN (
-            SELECT DISTINCT descendant_id
-            FROM (SELECT descendant_id
+            SELECT descendant_id
+            FROM (SELECT DISTINCT descendant_id
               FROM #{_ct.quoted_hierarchy_table_name}
               WHERE ancestor_id = #{_ct.quote(id)}
             ) AS x )
