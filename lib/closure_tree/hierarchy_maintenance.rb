@@ -61,16 +61,18 @@ module ClosureTree
 
     def rebuild!(called_by_rebuild = false)
       _ct.with_advisory_lock do
-        delete_hierarchy_references unless @was_new_record
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-        unless root?
-          _ct.connection.execute <<-SQL.strip_heredoc
-            INSERT INTO #{_ct.quoted_hierarchy_table_name}
-              (ancestor_id, descendant_id, generations)
-            SELECT x.ancestor_id, #{_ct.quote(_ct_id)}, x.generations + 1
-            FROM #{_ct.quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
-          SQL
+        unless @was_new_record
+          delete_hierarchy_references 
+          hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+          unless root?
+            _ct.connection.execute <<-SQL.strip_heredoc
+              INSERT INTO #{_ct.quoted_hierarchy_table_name}
+                (ancestor_id, descendant_id, generations)
+              SELECT x.ancestor_id, #{_ct.quote(_ct_id)}, x.generations + 1
+              FROM #{_ct.quoted_hierarchy_table_name} x
+              WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
+            SQL
+          end
         end
 
         if _ct.order_is_numeric? && !@_ct_skip_sort_order_maintenance
