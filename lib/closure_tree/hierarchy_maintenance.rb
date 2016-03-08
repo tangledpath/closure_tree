@@ -61,7 +61,7 @@ module ClosureTree
 
     def rebuild!(called_by_rebuild = false)
       _ct.with_advisory_lock do
-        unless @was_new_record
+        unless self.id.nil?
           delete_hierarchy_references 
           hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
           unless root?
